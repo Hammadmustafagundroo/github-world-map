@@ -56,8 +56,20 @@ print(f"Total commits found: {total_commits}")
 tree = ET.parse(SVG_FILE)
 root = tree.getroot()
 
+# ─────────────────────────────
+# SVG dimensions (supports both viewBox and width/height)
+# ─────────────────────────────
 viewBox = root.attrib.get("viewBox")
-min_x, min_y, width, height = map(float, viewBox.split())
+
+if viewBox:
+    min_x, min_y, width, height = map(float, viewBox.split())
+else:
+    # Fallback for SVGs without viewBox (SimpleMaps)
+    min_x = 0
+    min_y = 0
+    width = float(root.attrib.get("width"))
+    height = float(root.attrib.get("height"))
+
 
 def latlon_to_xy(lat, lon):
     x = min_x + (lon + 180) * (width / 360)
