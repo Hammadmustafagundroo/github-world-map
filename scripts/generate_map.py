@@ -78,13 +78,18 @@ def latlon_to_xy(lat, lon):
 
 # ─────────────────────────────
 # 3️⃣ Draw commit dots
+# ─────────────────────────────# ─────────────────────────────
+# 3️⃣ Draw EXACTLY one dot per commit
 # ─────────────────────────────
 random.seed(total_commits)
-dot_count = min(total_commits, len(CITIES) * 6)
 
-for _ in range(dot_count):
+for _ in range(total_commits):
     city, lat, lon = random.choice(CITIES)
     x, y = latlon_to_xy(lat, lon)
+
+    # small jitter to avoid perfect overlap
+    x += random.uniform(-4, 4)
+    y += random.uniform(-4, 4)
 
     ET.SubElement(
         root,
@@ -92,9 +97,9 @@ for _ in range(dot_count):
         {
             "cx": str(x),
             "cy": str(y),
-            "r": "3",
+            "r": "4",
             "fill": DOT_COLOR,
-            "fill-opacity": "0.85"
+            "fill-opacity": "0.9"
         }
     )
 
