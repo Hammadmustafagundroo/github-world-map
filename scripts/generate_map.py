@@ -3,8 +3,10 @@ import json
 import random
 import xml.etree.ElementTree as ET
 from cities import CITIES
+import os
 
 USERNAME = "Hammadmustafagundroo"
+TOKEN = os.getenv("GH_TOKEN")
 DOT_COLOR = "#22c55e"
 
 SVG_WIDTH = 2000
@@ -15,27 +17,44 @@ def latlon_to_xy(lat, lon):
     y = (90 - lat) * (SVG_HEIGHT / 180)
     return x, y
 
-# Fetch GitHub events (NO requests, built-in only)
-url = f"https://api.github.com/users/{USERNAME}/events/public"
+def github_api(url):
+    req = urllib.request.Request(url)
+    if TOKEN:
+        req.add_header("Authorization", f"token {TOKEN}")
+    with urllib.request.urlopen(req) as response:
+        return json.loads(response.read().decode())
 
-with urllib.request.urlopen(url) as response:
-    events = json.loads(response.read().decode())
+# 1️⃣ Get all repositories
+repos = github_api(f"https://api.github.com/users/{USERNAME}/repos?per_page=100")
 
-# Count commits
-commit_count = sum(
-    1 for e in events if e.get("type") == "PushEvent"
-)
+total_commits = 0
 
-print(f"Commits found: {commit_count}")
+# 2️⃣ Count commits in each repo
+for repo in repos:
+    name = repo["name"]
+    commits_url = f"https://api.github.com/repos/{USERNAME}/{name}/commits?per_page=1"
+    req = urllib.request.Request(commits_url)
+    if TOKEN:
+        req.add_header("Authorization", f"token {TOKEN}")
+    with urllib.request.urlopen(req) as response:
+        link = response.headers.get("Link")
+        if link and 'rel="last"' in link:
+            last_page = int(link.split("page=")[-1].split(">")[0])
+            total_commits += last_page
+        else:
+            total_commits += 1
 
-# Load SVG
+print(f"Total commits found: {total_commits}")
+
+# 3️⃣ Generate dots
 tree = ET.parse("assets/world.svg")
 root = tree.getroot()
 
-# Choose random cities
-chosen_cities = random.sample(CITIES, min(commit_count, len(CITIES)))
+random.seed(total_commits)
+dots = min(total_commits, len(CITIES) * 5)
 
-for city, lat, lon in chosen_cities:
+for _ in range(dots):
+    city, lat, lon = random.choice(CITIES)
     x, y = latlon_to_xy(lat, lon)
     ET.SubElement(
         root,
@@ -43,12 +62,11 @@ for city, lat, lon in chosen_cities:
         {
             "cx": str(x),
             "cy": str(y),
-            "r": "4",
+            "r": "3",
             "fill": DOT_COLOR,
-            "fill-opacity": "0.85"
+            "fill-opacity": "0.75"
         }
     )
 
-# Save output
 tree.write("assets/world-map.svg")
-print("✅ world-map.svg generated successfully")
+print("✅ World map generated from FULL commit history")
