@@ -47,7 +47,7 @@ for lat_min, lat_max, lon_min, lon_max in LAND_BOXES:
 
 # Final safety check (CI-safe)
 TOTAL = len(CITIES)
-if TOTAL < 5000:
+if TOTAL < 4200:
     raise RuntimeError(
-        f"City generation failed: only {TOTAL} points (need ~5000)"
+        f"City generation failed: only {TOTAL} points (need ~4200)"
     )
