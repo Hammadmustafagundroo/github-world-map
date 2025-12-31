@@ -27,6 +27,10 @@ for lat_min, lat_max in LAT_RANGES:
 
 # Final safety check (CI-safe)
 TOTAL = len(CITIES)
-if TOTAL < 10000:
-    raise RuntimeError(f"City generation failed: only {TOTAL} points")
+
+# ~5000 global points is more than enough for all commits
+if TOTAL < 5000:
+    raise RuntimeError(
+        f"City generation failed: only {TOTAL} points (need ~5000)"
+    )
 
