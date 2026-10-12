@@ -67,4 +67,4 @@ The generated visualization is saved to `assets/world-map.svg`.
 
 ## License
 
-No license has been specified yet. Add a license if you want to define the terms under which others may use, modify, and distribute the project.
+This project is licensed under the [MIT License](LICENSE).
